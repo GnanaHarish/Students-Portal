@@ -3,13 +3,16 @@ import Student from "../models/Student";
 import Dean from "../models/Dean";
 
 export async function authenticateStudent(req: any, res: Response, next: NextFunction){
-    const token = req.headers.authorization?.replace('Bearer', '');
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    console.log(req.headers.authorization)
+    console.log(token)
 
     if(!token){
         return res.status(401).json({message: "You are not authorized"});
     }
 
     try {
+        
         const student = await Student.findOne({token});
         if(!student){
             return res.status(401).json({message: "You are not authorized"});
@@ -17,6 +20,7 @@ export async function authenticateStudent(req: any, res: Response, next: NextFun
         req.student = student;
         next();
     } catch (error: unknown) {
+        console.log("Error", error)
         return res.status(500).json({message: "Internal Server Error"});
     }
 }
