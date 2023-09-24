@@ -25,9 +25,7 @@ export async function studentLogin(req: any, res: any) {
       await newStudent.save();
       return res.status(200).json({ message: "Student Added successfully" });
     } else {
-      console.log(student.password);
       const passwordMatch = await bcrypt.compare(password, student.password);
-      console.log(password);
       if (!passwordMatch) {
         return res
           .status(401)
@@ -49,7 +47,7 @@ export async function getAvailableSlots(req: any, res: any) {
     const availableSessions = await Session.find({
       deanAvailable: true,
       dean: deanId,
-    }).populate("dean", "universityId");
+    }, ).populate("dean", "universityId");
 
     if (!availableSessions) {
       return res
@@ -67,18 +65,21 @@ export async function getAvailableSlots(req: any, res: any) {
 //POST book a slot
 
 export async function bookSlot(req: any, res: any) {
-  const {  deanId } = req.params;
+  const { deanId } = req.params;
   const date = req.query.date;
-  const [day, month, year] = date.replace("-", "/").split("/");
+  const regex = new RegExp('-', "g");
+  const [day, month, year] = date.replace(regex, "/").split("/");
   const userDate = `${year}-${month}-${day}`;
-
   try {
-    const findBookingSlot = await  Session.findOneAndUpdate(
+    const studentId = req.student._id;
+    console.log(req.student._id)
+    const findBookingSlot = await Session.findOneAndUpdate(
       {
         date: userDate,
-        dean: deanId
+        dean: deanId,
+        deanAvailable: true
       },
-      { $set: { deanAvailable: false } },
+      { $set: { deanAvailable: false, student:  studentId} },
       { new: true }
     );
     if (!findBookingSlot) {
@@ -86,9 +87,7 @@ export async function bookSlot(req: any, res: any) {
     }
     return res.status(200).json(findBookingSlot);
   } catch (error: unknown) {
-    res.status(500).json({message: "Internal Error"});
+    console.log("Error while Booking", error);
+    res.status(500).json({ message: "Internal Error" });
   }
-  
 }
-
-

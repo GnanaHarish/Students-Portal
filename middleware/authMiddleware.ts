@@ -4,8 +4,6 @@ import Dean from "../models/Dean";
 
 export async function authenticateStudent(req: any, res: Response, next: NextFunction){
     const token = req.headers.authorization?.replace('Bearer ', '');
-    console.log(req.headers.authorization)
-    console.log(token)
 
     if(!token){
         return res.status(401).json({message: "You are not authorized"});

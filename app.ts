@@ -22,7 +22,7 @@ app.use(cors());
 
 //Routes
 app.use('/api/students', studentRoutes);
-app.use('/api/deans', deanRoutes);
+app.use('/api/deans', deanRoutes);  
 
 
 
