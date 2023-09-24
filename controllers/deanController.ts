@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import Dean from "../models/Dean";
+import Student from "../models/Student";
 import Session from "../models/Session";
 
 export async function deanLogin(req: any, res: any) {
@@ -79,7 +80,10 @@ export async function getBookedSlot(req: any, res: any) {
           },
         },
       },
+      
     ]);
+
+     await Student.populate(bookedSlots, {path: "student", select: "universityId"})
 
     if (!bookedSlots) {
       res

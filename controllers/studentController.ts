@@ -44,10 +44,16 @@ export async function studentLogin(req: any, res: any) {
 export async function getAvailableSlots(req: any, res: any) {
   const { deanId } = req.params;
   try {
-    const availableSessions = await Session.find({
-      deanAvailable: true,
-      dean: deanId,
-    }, ).populate("dean", "universityId");
+    const availableSessions = await Session.find(
+      {
+        deanAvailable: true,
+        dean: deanId,
+      },
+      {
+        deanAvailable: 0,
+        _id: 0,
+      }
+    ).populate("dean", "-_id universityId");
 
     if (!availableSessions) {
       return res
@@ -67,20 +73,26 @@ export async function getAvailableSlots(req: any, res: any) {
 export async function bookSlot(req: any, res: any) {
   const { deanId } = req.params;
   const date = req.query.date;
-  const regex = new RegExp('-', "g");
+  const regex = new RegExp("-", "g");
   const [day, month, year] = date.replace(regex, "/").split("/");
   const userDate = `${year}-${month}-${day}`;
   try {
     const studentId = req.student._id;
-    console.log(req.student._id)
     const findBookingSlot = await Session.findOneAndUpdate(
       {
         date: userDate,
         dean: deanId,
-        deanAvailable: true
+        deanAvailable: true,
       },
-      { $set: { deanAvailable: false, student:  studentId} },
-      { new: true }
+      { $set: { deanAvailable: false, student: studentId } },
+      {
+        projection: {
+          _id: 0,
+          deanAvailable: 0, 
+          student: 0, 
+        },
+        new: true,
+      }
     );
     if (!findBookingSlot) {
       return res.status(404).json({ message: "Session not available" });
